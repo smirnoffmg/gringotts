@@ -1,0 +1,42 @@
+# --- Secrets and local config (see docs/overview.md conventions) ---
+.env
+.env.*
+!.env.example
+!.env.*.example
+**/secrets/
+secrets/
+
+# Docker Compose local overrides (often bind mounts, ports, secrets)
+docker-compose.override.yml
+**/docker-compose.override.yml
+
+# Local media stack bind mounts (docker/local-media)
+docker/local-media/data/
+
+# sops / age: decrypted or plaintext siblings of encrypted files in-repo
+*.decrypted
+*.dec
+*.plain
+*.plaintext
+*.yaml.dec
+*.yml.dec
+
+# --- OS and editor noise ---
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# --- Shell / backup / local runs ---
+*.log
+*.tmp
+*.bak
+
+# --- Optional: local keys or certs copied while testing ---
+*.pem
+id_ed25519
+id_rsa
+*.key
