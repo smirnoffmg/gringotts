@@ -15,19 +15,19 @@ Implement `lib/emit.sh` — a sourceable script that appends structured checkpoi
 
 Emit the following named events (at minimum) with associated fields:
 
-| Event                    | Fields                                                        |
-| ------------------------ | ------------------------------------------------------------- |
-| `zfs_installed`          | `hardware_class`                                              |
-| `zfs_pool_created`       | `hardware_class`, `device`                                    |
-| `zfs_datasets_created`   | `hardware_class`                                              |
-| `docker_installed`       | `hardware_class`                                              |
-| `repo_cloned`            | `hardware_class`, `tag`                                       |
-| `tailscale_configured`   | `hardware_class`                                              |
-| `compose_deployed`       | `hardware_class`, `services` (space-separated list)           |
-| `first_file_written`     | `hardware_class`, `checksum_verified` (0 or 1)                |
-| `session_resumed`        | `hardware_class`, `resumed_at_checkpoint`, `provision_step`   |
-| `step_failed`            | `hardware_class`, `step`, `error_code`                        |
-| `session_abandoned`      | `hardware_class`, `last_completed_checkpoint`, `provision_step` |
+| Event                  | Fields                                                          |
+| ---------------------- | --------------------------------------------------------------- |
+| `zfs_installed`        | `hardware_class`                                                |
+| `zfs_pool_created`     | `hardware_class`, `device`                                      |
+| `zfs_datasets_created` | `hardware_class`                                                |
+| `docker_installed`     | `hardware_class`                                                |
+| `repo_cloned`          | `hardware_class`, `tag`                                         |
+| `tailscale_configured` | `hardware_class`                                                |
+| `compose_deployed`     | `hardware_class`, `services` (space-separated list)             |
+| `first_file_written`   | `hardware_class`, `checksum_verified` (0 or 1)                  |
+| `session_resumed`      | `hardware_class`, `resumed_at_checkpoint`, `provision_step`     |
+| `step_failed`          | `hardware_class`, `step`, `error_code`                          |
+| `session_abandoned`    | `hardware_class`, `last_completed_checkpoint`, `provision_step` |
 
 - Log format: one event per line, `timestamp=<epoch> event=<name> <key=value ...>`.
 - `emit <event> [key=value ...]` — the single public function; appends one line to the log.
