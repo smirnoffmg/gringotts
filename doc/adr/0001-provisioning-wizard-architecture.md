@@ -14,7 +14,7 @@ Proposed
 
 ## Context
 
-FEAT-0001 (Guided Primary-Store Provisioning) must guide non-expert users through standing up a self-hosted primary store. The first iteration targets a single hardware class: a Beelink ME Mini (Intel N150 iGPU, 16 GB RAM) running Debian 13. The wizard installs ZFS, creates a storage pool and dataset layout, installs Docker, and deploys the gringotts service stack (Traefik, Jellyfin, Immich, the *arr suite, Gluetun/qBittorrent). The wizard must achieve ≥60% single-session completion and must not require prior sysadmin knowledge.
+FEAT-0001 (Guided Primary-Store Provisioning) must guide non-expert users through standing up a self-hosted primary store. The first iteration targets a single hardware class: a Beelink ME Mini (Intel N150 iGPU, 16 GB RAM) running Debian 13. The wizard installs ZFS, creates a storage pool and dataset layout, installs Docker, and deploys the gringotts service stack (Traefik, Jellyfin, Immich, the \*arr suite, Gluetun/qBittorrent). The wizard must achieve ≥60% single-session completion and must not require prior sysadmin knowledge.
 
 The first iteration is implemented as a bash/CLI tool. Five decisions have meaningful architectural consequences:
 

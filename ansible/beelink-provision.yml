@@ -1,0 +1,9 @@
+---
+- name: Gringotts provisioning
+  hosts: beelink
+  become: true
+  become_method: ansible.builtin.sudo
+  roles:
+    - zfs_datasets
+    - docker
+    - services

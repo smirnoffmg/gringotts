@@ -1,0 +1,92 @@
+---
+- name: Check xray config exists
+  ansible.builtin.stat:
+    path: /tank/services/xray/config.json
+  register: xray_config
+
+- name: Fail if xray config is missing
+  ansible.builtin.fail:
+    msg: "xray config.json not found at /tank/services/xray/config.json — copy it before running this playbook"
+  when: not xray_config.stat.exists
+
+- name: Set ownership on ZFS service datasets
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: "{{ gringotts_user }}"
+    group: "{{ gringotts_user }}"
+    mode: "0700"
+    state: directory
+  loop:
+    - /tank/services/xray
+    - /tank/services/seerr
+    - /tank/services/sonarr
+    - /tank/services/radarr
+    - /tank/services/prowlarr
+    - /tank/services/qbittorrent
+    - /tank/services/jellyfin
+    - /tank/media/tv
+    - /tank/media/movies
+    - /tank/photos
+    - /tank/downloads
+
+- name: Create compose directories
+  ansible.builtin.file:
+    path: "{{ gringotts_compose_dir }}/{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - media-stack
+    - immich
+    - xray
+
+- name: Deploy media-stack compose file
+  ansible.builtin.copy:
+    src: media-stack.yml
+    dest: "{{ gringotts_compose_dir }}/media-stack/docker-compose.yml"
+    mode: "0644"
+
+- name: Deploy media-stack env file
+  ansible.builtin.template:
+    src: media-stack.env.j2
+    dest: "{{ gringotts_compose_dir }}/media-stack/.env"
+    mode: "0640"
+
+- name: Deploy immich compose file
+  ansible.builtin.copy:
+    src: immich.yml
+    dest: "{{ gringotts_compose_dir }}/immich/docker-compose.yml"
+    mode: "0644"
+
+- name: Deploy immich env file
+  ansible.builtin.template:
+    src: immich.env.j2
+    dest: "{{ gringotts_compose_dir }}/immich/.env"
+    mode: "0640"
+
+- name: Deploy xray compose file
+  ansible.builtin.copy:
+    src: xray.yml
+    dest: "{{ gringotts_compose_dir }}/xray/docker-compose.yml"
+    mode: "0644"
+
+- name: Patch xray to listen on all interfaces
+  ansible.builtin.replace:
+    path: /tank/services/xray/config.json
+    regexp: '"listen": "127\.0\.0\.1"'
+    replace: '"listen": "0.0.0.0"'
+  notify: Restart xray
+
+- name: Start media-stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ gringotts_compose_dir }}/media-stack"
+    state: present
+
+- name: Start immich
+  community.docker.docker_compose_v2:
+    project_src: "{{ gringotts_compose_dir }}/immich"
+    state: present
+
+- name: Start xray
+  community.docker.docker_compose_v2:
+    project_src: "{{ gringotts_compose_dir }}/xray"
+    state: present

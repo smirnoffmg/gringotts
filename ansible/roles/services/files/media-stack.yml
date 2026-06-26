@@ -1,0 +1,186 @@
+name: media-stack
+
+networks:
+  gringotts:
+    name: gringotts
+    driver: bridge
+
+services:
+  traefik:
+    image: traefik:v3
+    container_name: traefik
+    networks: [gringotts]
+    ports:
+      - "80:80"
+      - "8081:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - --api.dashboard=true
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.network=gringotts
+      - --entrypoints.web.address=:80
+    restart: unless-stopped
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    networks: [gringotts]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - /tank/services/sonarr:/config
+      - /tank/media/tv:/tv
+      - /tank/downloads:/downloads
+    ports:
+      - "8989:8989"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.gringotts.local`)"
+      - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
+    restart: unless-stopped
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    networks: [gringotts]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - /tank/services/radarr:/config
+      - /tank/media/movies:/movies
+      - /tank/downloads:/downloads
+    ports:
+      - "7878:7878"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.radarr.rule=Host(`radarr.gringotts.local`)"
+      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
+    restart: unless-stopped
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    networks: [gringotts]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - /tank/services/prowlarr:/config
+    ports:
+      - "9696:9696"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.gringotts.local`)"
+      - "traefik.http.services.prowlarr.loadbalancer.server.port=9696"
+    restart: unless-stopped
+
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    network_mode: host
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - VERSION=docker
+      - PLEX_CLAIM=${PLEX_CLAIM:-}
+    volumes:
+      - /tank/services/plex:/config
+      - /tank/media/tv:/tv
+      - /tank/media/movies:/movies
+    devices:
+      - /dev/dri:/dev/dri
+    restart: unless-stopped
+
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    container_name: seerr
+    init: true
+    networks: [gringotts]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - /tank/services/seerr:/app/config
+    ports:
+      - "5055:5055"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.seerr.rule=Host(`seerr.gringotts.local`)"
+      - "traefik.http.services.seerr.loadbalancer.server.port=5055"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:5055/api/v1/settings/public || exit 1
+      start_period: 20s
+      timeout: 3s
+      interval: 15s
+      retries: 3
+    restart: unless-stopped
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    networks: [gringotts]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - LOG_LEVEL=info
+      - PROXY_URL=socks5://host.docker.internal:10808
+    ports:
+      - "8191:8191"
+    restart: unless-stopped
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    networks: [gringotts]
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - WEBUI_PORT=8080
+    volumes:
+      - /tank/services/qbittorrent:/config
+      - /tank/downloads:/downloads
+    ports:
+      - "8080:8080"
+      - "6881:6881"
+      - "6881:6881/udp"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.qbittorrent.rule=Host(`qbittorrent.gringotts.local`)"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
+    restart: unless-stopped
+
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    networks: [gringotts]
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - /tank/services/jellyfin:/config
+      - /tank/services/jellyfin-cache:/cache
+      - /tank/media:/media
+    devices:
+      - /dev/dri:/dev/dri
+    ports:
+      - "8096:8096"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.gringotts.local`)"
+      - "traefik.http.services.jellyfin.loadbalancer.server.port=8096"
+    restart: unless-stopped
