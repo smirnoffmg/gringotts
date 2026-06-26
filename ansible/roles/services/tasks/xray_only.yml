@@ -1,0 +1,35 @@
+---
+- name: Check xray config exists
+  ansible.builtin.stat:
+    path: /tank/services/xray/config.json
+  register: xray_config
+
+- name: Fail if xray config is missing
+  ansible.builtin.fail:
+    msg: "xray config.json not found at /tank/services/xray/config.json — copy it before running this playbook"
+  when: not xray_config.stat.exists
+
+- name: Create xray compose directory
+  ansible.builtin.file:
+    path: "{{ gringotts_compose_dir }}/xray"
+    state: directory
+    mode: "0755"
+
+- name: Deploy xray compose file
+  ansible.builtin.copy:
+    src: xray.yml
+    dest: "{{ gringotts_compose_dir }}/xray/docker-compose.yml"
+    mode: "0644"
+
+- name: Set ownership on xray dataset
+  ansible.builtin.file:
+    path: /tank/services/xray
+    owner: "{{ gringotts_user }}"
+    group: "{{ gringotts_user }}"
+    mode: "0700"
+    state: directory
+
+- name: Start xray
+  community.docker.docker_compose_v2:
+    project_src: "{{ gringotts_compose_dir }}/xray"
+    state: present

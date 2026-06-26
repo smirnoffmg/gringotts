@@ -1,0 +1,8 @@
+---
+- name: Gringotts base setup
+  hosts: beelink
+  become: true
+  become_method: ansible.builtin.su
+  roles:
+    - beelink_base
+    - tailscale

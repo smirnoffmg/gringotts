@@ -1,0 +1,66 @@
+---
+zfs_datasets:
+  - name: tank/media
+    properties:
+      compression: lz4
+      atime: "off"
+  - name: tank/media/tv
+    properties:
+      compression: lz4
+      atime: "off"
+  - name: tank/media/movies
+    properties:
+      compression: lz4
+      atime: "off"
+  - name: tank/photos
+    properties:
+      compression: lz4
+      atime: "off"
+  - name: tank/downloads
+    properties:
+      compression: lz4
+      atime: "off"
+  - name: tank/services
+    properties:
+      compression: lz4
+      atime: "off"
+  - name: tank/services/sonarr
+    properties:
+      compression: lz4
+      atime: "off"
+  - name: tank/services/radarr
+    properties:
+      compression: lz4
+      atime: "off"
+  - name: tank/services/prowlarr
+    properties:
+      compression: lz4
+      atime: "off"
+  - name: tank/services/qbittorrent
+    properties:
+      compression: lz4
+      atime: "off"
+  - name: tank/services/jellyfin
+    properties:
+      compression: lz4
+      atime: "off"
+  - name: tank/services/jellyfin-cache
+    properties:
+      compression: "off"
+      atime: "off"
+  - name: tank/services/immich
+    properties:
+      compression: lz4
+      atime: "off"
+  - name: tank/services/plex
+    properties:
+      compression: lz4
+      atime: "off"
+  - name: tank/services/seerr
+    properties:
+      compression: lz4
+      atime: "off"
+  - name: tank/services/xray
+    properties:
+      compression: lz4
+      atime: "off"

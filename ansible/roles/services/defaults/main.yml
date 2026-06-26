@@ -1,0 +1,10 @@
+---
+gringotts_tz: Europe/Moscow
+gringotts_puid: 1000
+gringotts_pgid: 1000
+gringotts_compose_dir: /opt/gringotts
+
+immich_db_password: changeme
+immich_db_user: postgres
+immich_db_name: immich
+immich_version: release

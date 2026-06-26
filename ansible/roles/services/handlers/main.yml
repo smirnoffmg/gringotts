@@ -1,0 +1,6 @@
+---
+- name: Restart xray
+  community.docker.docker_compose_v2:
+    project_src: "{{ gringotts_compose_dir }}/xray"
+    state: present
+    recreate: always
