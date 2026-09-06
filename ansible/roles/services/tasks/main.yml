@@ -23,6 +23,7 @@
     - /tank/services/radarr
     - /tank/services/prowlarr
     - /tank/services/qbittorrent
+    - /tank/services/decluttarr
     - /tank/services/jellyfin
     - /tank/media/tv
     - /tank/media/movies
@@ -50,6 +51,38 @@
     src: media-stack.env.j2
     dest: "{{ gringotts_compose_dir }}/media-stack/.env"
     mode: "0640"
+
+- name: Check Radarr has been initialised
+  ansible.builtin.stat:
+    path: /tank/services/radarr/radarr.db
+  register: radarr_db
+
+# Decluttarr needs Radarr's API key and the qBittorrent credentials Radarr
+# already stores; reading them on the host keeps secrets out of the repo.
+- name: Read decluttarr credentials from Radarr
+  ansible.builtin.script:
+    cmd: radarr_qbittorrent_credentials.py
+    executable: python3
+  register: decluttarr_credentials
+  changed_when: false
+  no_log: true
+  when: radarr_db.stat.exists
+
+- name: Deploy decluttarr config
+  ansible.builtin.template:
+    src: decluttarr.yaml.j2
+    dest: /tank/services/decluttarr/config.yaml
+    owner: "{{ gringotts_user }}"
+    group: "{{ gringotts_user }}"
+    mode: "0600"
+  vars:
+    creds: "{{ decluttarr_credentials.stdout | from_json }}"
+    radarr_api_key: "{{ creds.radarr_api_key }}"
+    qbittorrent_username: "{{ creds.qbittorrent_username }}"
+    qbittorrent_password: "{{ creds.qbittorrent_password }}"
+  no_log: true
+  when: radarr_db.stat.exists
+  notify: Restart decluttarr
 
 - name: Deploy immich compose file
   ansible.builtin.copy:

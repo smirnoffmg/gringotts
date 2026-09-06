@@ -40,6 +40,10 @@ zfs_datasets:
     properties:
       compression: lz4
       atime: "off"
+  - name: tank/services/decluttarr
+    properties:
+      compression: lz4
+      atime: "off"
   - name: tank/services/jellyfin
     properties:
       compression: lz4

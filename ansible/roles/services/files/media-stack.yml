@@ -165,6 +165,18 @@ services:
       - "traefik.http.services.qbittorrent.loadbalancer.server.port=8080"
     restart: unless-stopped
 
+  decluttarr:
+    image: ghcr.io/manimatter/decluttarr:latest
+    container_name: decluttarr
+    networks: [gringotts]
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    volumes:
+      - /tank/services/decluttarr/config.yaml:/app/config/config.yaml:ro
+    restart: unless-stopped
+
   jellyfin:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin

@@ -8,3 +8,5 @@ immich_db_password: changeme
 immich_db_user: postgres
 immich_db_name: immich
 immich_version: release
+
+decluttarr_test_run: false
