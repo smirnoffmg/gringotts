@@ -58,11 +58,12 @@
     path: /tank/services/radarr/radarr.db
   register: radarr_db
 
-# Decluttarr needs Radarr's API key and the qBittorrent credentials Radarr
-# already stores; reading them on the host keeps secrets out of the repo.
-- name: Read decluttarr credentials from Radarr
+# Decluttarr needs the Radarr and Sonarr API keys and the qBittorrent
+# credentials Radarr already stores; reading them on the host keeps secrets
+# out of the repo.
+- name: Read decluttarr credentials from Radarr and Sonarr
   ansible.builtin.script:
-    cmd: radarr_qbittorrent_credentials.py
+    cmd: decluttarr_credentials.py
     executable: python3
   register: decluttarr_credentials
   changed_when: false
@@ -79,6 +80,7 @@
   vars:
     creds: "{{ decluttarr_credentials.stdout | from_json }}"
     radarr_api_key: "{{ creds.radarr_api_key }}"
+    sonarr_api_key: "{{ creds.sonarr_api_key }}"
     qbittorrent_username: "{{ creds.qbittorrent_username }}"
     qbittorrent_password: "{{ creds.qbittorrent_password }}"
   no_log: true
