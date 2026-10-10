@@ -177,6 +177,23 @@ services:
       - /tank/services/decluttarr/config.yaml:/app/config/config.yaml:ro
     restart: unless-stopped
 
+  maintainerr:
+    image: ghcr.io/maintainerr/maintainerr:latest
+    container_name: maintainerr
+    user: ${PUID}:${PGID}
+    networks: [gringotts]
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - /tank/services/maintainerr:/opt/data
+    ports:
+      - "6246:6246"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.maintainerr.rule=Host(`maintainerr.gringotts.local`)"
+      - "traefik.http.services.maintainerr.loadbalancer.server.port=6246"
+    restart: unless-stopped
+
   jellyfin:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin

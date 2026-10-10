@@ -24,6 +24,7 @@
     - /tank/services/prowlarr
     - /tank/services/qbittorrent
     - /tank/services/decluttarr
+    - /tank/services/maintainerr
     - /tank/services/jellyfin
     - /tank/media/tv
     - /tank/media/movies
