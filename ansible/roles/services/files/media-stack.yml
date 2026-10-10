@@ -198,8 +198,14 @@ services:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin
     networks: [gringotts]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # TMDb refuses direct connections from here; without it series get no artwork.
     environment:
       - TZ=${TZ}
+      - HTTP_PROXY=http://host.docker.internal:10809
+      - HTTPS_PROXY=http://host.docker.internal:10809
+      - NO_PROXY=localhost,127.0.0.1
     volumes:
       - /tank/services/jellyfin:/config
       - /tank/services/jellyfin-cache:/cache
