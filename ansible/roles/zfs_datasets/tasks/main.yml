@@ -1,0 +1,7 @@
+---
+- name: Create ZFS datasets
+  community.general.zfs:
+    name: "{{ item.name }}"
+    state: present
+    extra_zfs_properties: "{{ item.properties }}"
+  loop: "{{ zfs_datasets }}"

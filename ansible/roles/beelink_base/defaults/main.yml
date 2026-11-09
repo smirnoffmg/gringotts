@@ -1,0 +1,4 @@
+---
+gringotts_user: goblin
+gringotts_disk: /dev/nvme0n1
+gringotts_data_partition: 4

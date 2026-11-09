@@ -1,0 +1,33 @@
+general:
+  log_level: INFO
+  test_run: {{ "true" if decluttarr_test_run | bool else "false" }}
+  timer: 10
+
+job_defaults:
+  max_strikes: 3
+
+jobs:
+  remove_stalled:
+  # Catches torrents that still have peers but never finish (missing pieces).
+  # Auto-disabled while qBittorrent uses >80% of its global download limit,
+  # so a limit must be set in qBittorrent for this rule to fire.
+  remove_slow:
+    min_speed: 100
+  remove_failed_imports:
+    message_patterns:
+      - "Not an upgrade for existing*"
+      - "No files found are eligible for import*"
+
+instances:
+  radarr:
+    - base_url: "http://radarr:7878"
+      api_key: "{{ radarr_api_key }}"
+  sonarr:
+    - base_url: "http://sonarr:8989"
+      api_key: "{{ sonarr_api_key }}"
+
+download_clients:
+  qbittorrent:
+    - base_url: "http://qbittorrent:8080"
+      username: "{{ qbittorrent_username }}"
+      password: "{{ qbittorrent_password }}"

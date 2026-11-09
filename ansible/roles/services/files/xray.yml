@@ -1,0 +1,12 @@
+name: xray
+
+services:
+  xray:
+    image: ghcr.io/xtls/xray-core:latest
+    container_name: xray
+    user: "1000:1000"
+    command: ["-config", "/usr/local/etc/xray/config.json"]
+    volumes:
+      - /tank/services/xray:/usr/local/etc/xray
+    network_mode: host
+    restart: unless-stopped
