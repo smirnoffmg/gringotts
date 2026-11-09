@@ -30,4 +30,4 @@ download_clients:
   qbittorrent:
     - base_url: "http://qbittorrent:8080"
       username: "{{ qbittorrent_username }}"
-      password: "{{ qbittorrent_password }}"
+      password: {{ qbittorrent_password | to_json }}

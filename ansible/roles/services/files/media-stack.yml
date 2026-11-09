@@ -12,13 +12,14 @@ services:
     networks: [gringotts]
     ports:
       - "80:80"
-      - "8081:8080"
+      - "127.0.0.1:8081:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     command:
       - --api.dashboard=true
       - --api.insecure=true
       - --providers.docker=true
+      - --providers.docker.exposedByDefault=false
       - --providers.docker.network=gringotts
       - --entrypoints.web.address=:80
     restart: unless-stopped
@@ -139,8 +140,6 @@ services:
     environment:
       - LOG_LEVEL=info
       - PROXY_URL=socks5://host.docker.internal:10808
-    ports:
-      - "8191:8191"
     restart: unless-stopped
 
   qbittorrent:
@@ -168,6 +167,7 @@ services:
   decluttarr:
     image: ghcr.io/manimatter/decluttarr:latest
     container_name: decluttarr
+    profiles: [decluttarr]
     networks: [gringotts]
     environment:
       - PUID=${PUID}
@@ -186,12 +186,9 @@ services:
       - TZ=${TZ}
     volumes:
       - /tank/services/maintainerr:/opt/data
+    # The API is unauthenticated and can delete media; reach it over an SSH tunnel.
     ports:
-      - "6246:6246"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.maintainerr.rule=Host(`maintainerr.gringotts.local`)"
-      - "traefik.http.services.maintainerr.loadbalancer.server.port=6246"
+      - "127.0.0.1:6246:6246"
     restart: unless-stopped
 
   jellyfin:

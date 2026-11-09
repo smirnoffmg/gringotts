@@ -3,3 +3,8 @@
   ansible.builtin.systemd:
     name: dnsmasq
     state: restarted
+
+- name: Reload ssh
+  ansible.builtin.systemd:
+    name: ssh
+    state: reloaded

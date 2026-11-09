@@ -20,10 +20,12 @@ zfs_datasets:
     properties:
       compression: lz4
       atime: "off"
+      quota: 200G
   - name: tank/services
     properties:
       compression: lz4
       atime: "off"
+      reservation: 20G
   - name: tank/services/sonarr
     properties:
       compression: lz4

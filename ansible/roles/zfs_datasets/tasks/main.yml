@@ -5,3 +5,52 @@
     state: present
     extra_zfs_properties: "{{ item.properties }}"
   loop: "{{ zfs_datasets }}"
+
+- name: Install sanoid
+  ansible.builtin.apt:
+    name: sanoid
+    state: present
+    update_cache: true
+
+- name: Create sanoid config directory
+  ansible.builtin.file:
+    path: /etc/sanoid
+    state: directory
+    mode: "0755"
+
+- name: Configure local ZFS snapshots
+  ansible.builtin.copy:
+    dest: /etc/sanoid/sanoid.conf
+    content: |
+      [tank/photos]
+        use_template = production
+
+      [tank/services]
+        use_template = production
+        recursive = yes
+
+      [tank/services/jellyfin-cache]
+        use_template = ignore
+
+      [template_production]
+        frequently = 0
+        hourly = 24
+        daily = 30
+        monthly = 3
+        yearly = 0
+        autosnap = yes
+        autoprune = yes
+
+      [template_ignore]
+        autosnap = no
+        autoprune = no
+        monitor = no
+    mode: "0644"
+
+- name: Enable sanoid timer
+  ansible.builtin.systemd:
+    name: sanoid.timer
+    enabled: true
+    state: started
+  # The unit does not exist in check mode until the package is really installed.
+  ignore_errors: "{{ ansible_check_mode }}"

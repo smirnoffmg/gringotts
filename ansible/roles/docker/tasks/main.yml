@@ -42,6 +42,39 @@
     state: present
     update_cache: true
 
+# Takes effect on the next Docker restart and only for recreated containers;
+# no handler, so a provisioning run never interrupts playback.
+- name: Configure Docker log rotation
+  ansible.builtin.copy:
+    dest: /etc/docker/daemon.json
+    content: |
+      {
+        "log-driver": "json-file",
+        "log-opts": {
+          "max-size": "10m",
+          "max-file": "3"
+        }
+      }
+    mode: "0644"
+
+- name: Create Docker unit drop-in directory
+  ansible.builtin.file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+    mode: "0755"
+
+# Without this, a failed pool import lets containers start on empty /tank
+# directories on the root disk and initialise fresh configs and databases.
+- name: Make Docker depend on mounted ZFS datasets
+  ansible.builtin.copy:
+    dest: /etc/systemd/system/docker.service.d/zfs.conf
+    content: |
+      [Unit]
+      After=zfs-mount.service
+      AssertPathIsMountPoint=/tank/services
+    mode: "0644"
+  notify: Reload systemd
+
 - name: Enable and start Docker
   ansible.builtin.systemd:
     name: docker
