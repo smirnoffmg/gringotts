@@ -84,7 +84,25 @@
     enabled: true
     state: started
 
+- name: Read data partition label
+  ansible.builtin.command:
+    cmd: lsblk -no PARTLABEL {{ gringotts_disk }}p{{ gringotts_data_partition }}
+  register: gringotts_partlabel
+  changed_when: false
+  check_mode: false
+
 - name: Label data partition as gringotts
   ansible.builtin.command:
     cmd: /sbin/parted -s {{ gringotts_disk }} name {{ gringotts_data_partition }} gringotts
   changed_when: true
+  when: gringotts_partlabel.stdout | trim != 'gringotts'
+
+- name: Disable SSH password login
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/10-gringotts.conf
+    content: |
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+    mode: "0644"
+    validate: /usr/sbin/sshd -t -f %s
+  notify: Reload ssh

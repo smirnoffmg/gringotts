@@ -2,7 +2,7 @@ name: xray
 
 services:
   xray:
-    image: ghcr.io/xtls/xray-core:latest
+    image: ghcr.io/xtls/xray-core:26.3.27
     container_name: xray
     user: "1000:1000"
     command: ["-config", "/usr/local/etc/xray/config.json"]

@@ -8,5 +8,6 @@
 - name: Restart decluttarr
   community.docker.docker_compose_v2:
     project_src: "{{ gringotts_compose_dir }}/media-stack"
+    profiles: [decluttarr]
     services: [decluttarr]
     state: restarted

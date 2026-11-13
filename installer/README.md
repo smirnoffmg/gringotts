@@ -100,3 +100,13 @@ After reboot, label p4:
 ```bash
 sudo parted -s /dev/nvme0n1 name 4 gringotts
 ```
+
+## Creating the ZFS pool
+
+The provisioning playbook expects the `tank` pool to exist. The current pool
+was created without an explicit sector size and got `ashift=9`, which cannot be
+changed afterwards. For a new pool, set it explicitly:
+
+```bash
+sudo zpool create -o ashift=12 -O compression=lz4 -O atime=off -O xattr=sa tank /dev/disk/by-partlabel/gringotts
+```

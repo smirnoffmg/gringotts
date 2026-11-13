@@ -23,8 +23,25 @@
     enabled: true
     state: started
 
+- name: Read Tailscale login state
+  ansible.builtin.command:
+    cmd: tailscale status --json
+  register: tailscale_status
+  changed_when: false
+  failed_when: false
+
 - name: Connect to Tailscale network
   ansible.builtin.command:
-    cmd: tailscale up --authkey={{ tailscale_authkey }} --accept-routes
+    cmd: tailscale up --authkey={{ tailscale_authkey }}
   changed_when: true
-  when: tailscale_authkey != ""
+  no_log: true
+  when:
+    - tailscale_authkey != ""
+    - tailscale_status.stdout is not search('"BackendState":\s*"Running"')
+
+# With accept-dns on, tailscaled and dhcpcd race over /etc/resolv.conf; losing
+# the race left the host with no upstream resolver.
+- name: Apply Tailscale preferences
+  ansible.builtin.command:
+    cmd: tailscale set --accept-dns=false --accept-routes
+  changed_when: false

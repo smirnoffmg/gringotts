@@ -1,4 +1,10 @@
 ---
+- name: Require a real Immich database password
+  ansible.builtin.assert:
+    that: immich_db_password | length >= 16
+    fail_msg: "Set immich_db_password in group_vars/beelink/vault.yml"
+  no_log: true
+
 - name: Check xray config exists
   ansible.builtin.stat:
     path: /tank/services/xray/config.json
@@ -58,6 +64,11 @@
     path: /tank/services/radarr/radarr.db
   register: radarr_db
 
+- name: Check Sonarr has been initialised
+  ansible.builtin.stat:
+    path: /tank/services/sonarr/sonarr.db
+  register: sonarr_db
+
 # Decluttarr needs the Radarr and Sonarr API keys and the qBittorrent
 # credentials Radarr already stores; reading them on the host keeps secrets
 # out of the repo.
@@ -68,7 +79,7 @@
   register: decluttarr_credentials
   changed_when: false
   no_log: true
-  when: radarr_db.stat.exists
+  when: radarr_db.stat.exists and sonarr_db.stat.exists
 
 - name: Deploy decluttarr config
   ansible.builtin.template:
@@ -84,7 +95,7 @@
     qbittorrent_username: "{{ creds.qbittorrent_username }}"
     qbittorrent_password: "{{ creds.qbittorrent_password }}"
   no_log: true
-  when: radarr_db.stat.exists
+  when: radarr_db.stat.exists and sonarr_db.stat.exists
   notify: Restart decluttarr
 
 - name: Deploy immich compose file
@@ -105,17 +116,11 @@
     dest: "{{ gringotts_compose_dir }}/xray/docker-compose.yml"
     mode: "0644"
 
-- name: Patch xray to listen on all interfaces
-  ansible.builtin.replace:
-    path: /tank/services/xray/config.json
-    regexp: '"listen": "127\.0\.0\.1"'
-    replace: '"listen": "0.0.0.0"'
-  notify: Restart xray
-
 - name: Start media-stack
   community.docker.docker_compose_v2:
     project_src: "{{ gringotts_compose_dir }}/media-stack"
     state: present
+    profiles: "{{ ['decluttarr'] if (radarr_db.stat.exists and sonarr_db.stat.exists) else [] }}"
 
 - name: Start immich
   community.docker.docker_compose_v2:
