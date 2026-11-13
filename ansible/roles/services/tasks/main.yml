@@ -131,3 +131,43 @@
   community.docker.docker_compose_v2:
     project_src: "{{ gringotts_compose_dir }}/xray"
     state: present
+
+# Plex for PS5 stalls on embedded SRT tracks; sidecar files play smoothly.
+- name: Install ffmpeg for subtitle extraction
+  ansible.builtin.apt:
+    name: ffmpeg
+    state: present
+    update_cache: true
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+
+- name: Create gringotts script directory
+  ansible.builtin.file:
+    path: /usr/local/lib/gringotts
+    state: directory
+    mode: "0755"
+
+- name: Deploy Plex subtitle extraction script
+  ansible.builtin.copy:
+    src: plex_subtitles.py
+    dest: /usr/local/lib/gringotts/plex_subtitles.py
+    mode: "0755"
+
+- name: Deploy Plex subtitle extraction service
+  ansible.builtin.template:
+    src: plex-subtitles.service.j2
+    dest: /etc/systemd/system/plex-subtitles.service
+    mode: "0644"
+
+- name: Deploy Plex subtitle extraction timer
+  ansible.builtin.copy:
+    src: plex-subtitles.timer
+    dest: /etc/systemd/system/plex-subtitles.timer
+    mode: "0644"
+
+- name: Enable Plex subtitle extraction timer
+  ansible.builtin.systemd_service:
+    name: plex-subtitles.timer
+    enabled: true
+    state: started
+    daemon_reload: true
