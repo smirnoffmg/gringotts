@@ -1,0 +1,12 @@
+[Unit]
+Description=Extract embedded SRT subtitles into Plex sidecar files
+After=docker.service
+
+[Service]
+Type=oneshot
+User={{ gringotts_user }}
+Group={{ gringotts_user }}
+StateDirectory=plex-subtitles
+ExecStart=/usr/bin/python3 -I -u /usr/local/lib/gringotts/plex_subtitles.py
+Nice=10
+IOSchedulingClass=idle
